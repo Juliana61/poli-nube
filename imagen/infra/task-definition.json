@@ -1,5 +1,5 @@
 {
-  "family": "image-labeler",
+  "family": "jcr-task-definition",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",

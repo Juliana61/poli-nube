@@ -10,7 +10,7 @@ env:
   ECR_REPOSITORY: jcr-image-labeler
   ECS_CLUSTER: jcr-image-labeler-cluster
   ECS_SERVICE: jcr-image-labeler-service
-  CONTAINER_NAME: image-labeler
+  CONTAINER_NAME: Main
 
 jobs:
   deploy:
