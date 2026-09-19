@@ -1,0 +1,63 @@
+name: Build y deploy a ECS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: jcr-image-labeler
+  ECS_CLUSTER: jcr-image-labeler-cluster
+  ECS_SERVICE: jcr-image-labeler-service
+  CONTAINER_NAME: image-labeler
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Llaves de acceso directas del IAM user (guardadas como secrets del repo).
+      - name: Autenticarse en AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Iniciar sesión en ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construir y subir la imagen
+        id: build
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build -f imagen/Dockerfile \
+                       -t $REGISTRY/$ECR_REPOSITORY:$TAG \
+                       -t $REGISTRY/$ECR_REPOSITORY:latest imagen
+          docker push $REGISTRY/$ECR_REPOSITORY:$TAG
+          docker push $REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$REGISTRY/$ECR_REPOSITORY:$TAG" >> $GITHUB_OUTPUT
+
+      - name: Actualizar la task definition con la nueva imagen
+        id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: imagen/infra/task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build.outputs.image }}
+
+      - name: Desplegar en ECS y esperar a que quede estable
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

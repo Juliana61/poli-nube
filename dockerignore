@@ -1,0 +1,10 @@
+.git
+.github
+infra
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+README.md
+*.md
