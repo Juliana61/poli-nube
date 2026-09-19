@@ -9,7 +9,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: jcr-image-labeler
   ECS_CLUSTER: jcr-image-labeler-cluster
-  ECS_SERVICE: jcr-image-labeler-service
+  ECS_SERVICE: jcr-image-labeler-service-u3kcagnw
   CONTAINER_NAME: Main
 
 jobs:
