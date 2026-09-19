@@ -1,0 +1,23 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GuardarYLeerImagenes",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject"],
+      "Resource": "arn:aws:s3:::<BUCKET>/uploads/*"
+    },
+    {
+      "Sid": "AnalizarImagenes",
+      "Effect": "Allow",
+      "Action": ["rekognition:DetectLabels"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "GuardarEtiquetas",
+      "Effect": "Allow",
+      "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Scan"],
+      "Resource": "arn:aws:dynamodb:us-east-1:<CUENTA>:table/jcr-ImageLabels"
+    }
+  ]
+}
